@@ -14,6 +14,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _hidePassword = true;
 
   @override
   void dispose() {
@@ -27,37 +28,51 @@ class _LoginScreenState extends State<LoginScreen> {
     final auth = Provider.of<AuthProvider>(context);
 
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: Theme.of(context).colorScheme.surface, // dark bg
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // App Logo or Title
-              Icon(Icons.terrain, size: 80, color: Colors.green[700]),
+              // App Logo
+              Image.asset('assets/images/logo.png', height: 120),
               const SizedBox(height: 16),
-              Text(
-                "Trekkers",
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green[800],
-                ),
-              ),
+
               const SizedBox(height: 32),
 
               // Email field
               TextField(
                 controller: _emailController,
+                style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.email),
+                  prefixIcon: Icon(
+                    Icons.email_outlined,
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
                   labelText: 'Email',
+                  labelStyle: TextStyle(color: Colors.grey[400]),
+                  filled: true,
+                  fillColor: Colors.grey[900],
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: 18,
+                    horizontal: 16,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
                   ),
-                  filled: true,
-                  fillColor: Colors.white,
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey.shade700),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).colorScheme.primary,
+                      width: 2,
+                    ),
+                  ),
                 ),
                 keyboardType: TextInputType.emailAddress,
               ),
@@ -66,16 +81,48 @@ class _LoginScreenState extends State<LoginScreen> {
               // Password field
               TextField(
                 controller: _passwordController,
+                obscureText: _hidePassword,
+                style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.lock),
+                  prefixIcon: Icon(
+                    Icons.lock_outline,
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
                   labelText: 'Password',
+                  labelStyle: TextStyle(color: Colors.grey[400]),
+                  filled: true,
+                  fillColor: Colors.grey[900],
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: 18,
+                    horizontal: 16,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
                   ),
-                  filled: true,
-                  fillColor: Colors.white,
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey.shade700),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).colorScheme.primary,
+                      width: 2,
+                    ),
+                  ),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _hidePassword ? Icons.visibility_off : Icons.visibility,
+                      color: Colors.grey,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _hidePassword = !_hidePassword;
+                      });
+                    },
+                  ),
                 ),
-                obscureText: true,
               ),
               const SizedBox(height: 24),
 
@@ -103,11 +150,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    backgroundColor: Colors.green[700],
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
+                    elevation: 5,
                   ),
                   child: const Text(
                     'Login',
@@ -121,13 +170,19 @@ class _LoginScreenState extends State<LoginScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text("Don't have an account?"),
+                  const Text(
+                    "Don't have an account?",
+                    style: TextStyle(color: Colors.white70),
+                  ),
                   TextButton(
                     onPressed: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(builder: (_) => const SignupScreen()),
                       );
                     },
+                    style: TextButton.styleFrom(
+                      foregroundColor: Theme.of(context).colorScheme.secondary,
+                    ),
                     child: const Text(
                       "Sign Up",
                       style: TextStyle(fontWeight: FontWeight.bold),
@@ -136,24 +191,28 @@ class _LoginScreenState extends State<LoginScreen> {
                 ],
               ),
 
-              // (Optional) Divider and Social login buttons
+              // Divider
               const SizedBox(height: 16),
               Row(
                 children: const [
-                  Expanded(child: Divider(thickness: 1)),
+                  Expanded(child: Divider(color: Colors.grey)),
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 8),
-                    child: Text("OR"),
+                    child: Text("OR", style: TextStyle(color: Colors.white70)),
                   ),
-                  Expanded(child: Divider(thickness: 1)),
+                  Expanded(child: Divider(color: Colors.grey)),
                 ],
               ),
               const SizedBox(height: 16),
 
-              // Social login buttons (future ready)
+              // Social login button (Google)
               ElevatedButton.icon(
                 onPressed: () {},
-                icon: const Icon(Icons.g_mobiledata, size: 28),
+                icon: const Icon(
+                  Icons.g_mobiledata,
+                  size: 28,
+                  color: Colors.red,
+                ),
                 label: const Text("Continue with Google"),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,

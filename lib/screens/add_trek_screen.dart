@@ -65,10 +65,14 @@ class _AddTrekPageState extends State<AddTrekPage> {
           }
 
           return AlertDialog(
+            backgroundColor: Colors.grey[900],
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
-            title: const Text("Add Mid-Point"),
+            title: const Text(
+              "Add Mid-Point",
+              style: TextStyle(color: Colors.white),
+            ),
             content: SingleChildScrollView(
               child: Column(
                 children: [
@@ -111,10 +115,10 @@ class _AddTrekPageState extends State<AddTrekPage> {
                   ),
                   TextButton.icon(
                     onPressed: pickMidPointImages,
-                    icon: const Icon(Icons.image, color: Colors.green),
+                    icon: const Icon(Icons.image, color: Colors.greenAccent),
                     label: const Text(
                       "Add Images",
-                      style: TextStyle(color: Colors.green),
+                      style: TextStyle(color: Colors.greenAccent),
                     ),
                   ),
                 ],
@@ -123,11 +127,15 @@ class _AddTrekPageState extends State<AddTrekPage> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text("Cancel"),
+                child: const Text(
+                  "Cancel",
+                  style: TextStyle(color: Colors.white70),
+                ),
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
+                  backgroundColor: Colors.greenAccent,
+                  foregroundColor: Colors.black,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -210,13 +218,19 @@ class _AddTrekPageState extends State<AddTrekPage> {
         controller: controller,
         keyboardType: isNumber ? TextInputType.number : TextInputType.text,
         maxLines: maxLines,
+        style: const TextStyle(color: Colors.white),
         decoration: InputDecoration(
           labelText: label,
+          labelStyle: const TextStyle(color: Colors.grey),
           filled: true,
-          fillColor: Colors.green.shade50,
-          border: OutlineInputBorder(
+          fillColor: Colors.grey[900],
+          focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
+            borderSide: const BorderSide(color: Colors.greenAccent),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey.shade700),
           ),
         ),
         validator: (val) => val!.isEmpty ? 'Enter $label' : null,
@@ -227,9 +241,11 @@ class _AddTrekPageState extends State<AddTrekPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
         title: const Text("Add Trek"),
-        backgroundColor: Colors.green,
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -241,7 +257,11 @@ class _AddTrekPageState extends State<AddTrekPage> {
             children: [
               const Text(
                 "Trek Details",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
               _buildTextField(_nameController, "Trek Name"),
               _buildTextField(
@@ -272,14 +292,16 @@ class _AddTrekPageState extends State<AddTrekPage> {
               ),
               const SizedBox(height: 10),
               DropdownButtonFormField<String>(
+                dropdownColor: Colors.grey[900],
                 value: _difficulty,
+                style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
                   labelText: "Difficulty",
+                  labelStyle: const TextStyle(color: Colors.grey),
                   filled: true,
-                  fillColor: Colors.green.shade50,
+                  fillColor: Colors.grey[900],
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
                   ),
                 ),
                 items: ["Easy", "Moderate", "Hard"]
@@ -288,21 +310,30 @@ class _AddTrekPageState extends State<AddTrekPage> {
                 onChanged: (val) => setState(() => _difficulty = val!),
               ),
               SwitchListTile(
-                title: const Text("Featured"),
-                activeColor: Colors.green,
+                title: const Text(
+                  "Featured",
+                  style: TextStyle(color: Colors.white),
+                ),
+                activeColor: Colors.greenAccent,
                 value: _featured,
                 onChanged: (val) => setState(() => _featured = val),
               ),
               SwitchListTile(
-                title: const Text("Active"),
-                activeColor: Colors.green,
+                title: const Text(
+                  "Active",
+                  style: TextStyle(color: Colors.white),
+                ),
+                activeColor: Colors.greenAccent,
                 value: _isActive,
                 onChanged: (val) => setState(() => _isActive = val),
               ),
               const SizedBox(height: 16),
               const Text(
                 "Trek Images",
-                style: TextStyle(fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
               const SizedBox(height: 8),
               Wrap(
@@ -336,32 +367,40 @@ class _AddTrekPageState extends State<AddTrekPage> {
               ),
               TextButton.icon(
                 onPressed: _pickTrekImages,
-                icon: const Icon(Icons.image, color: Colors.green),
+                icon: const Icon(Icons.image, color: Colors.greenAccent),
                 label: const Text(
                   "Add Trek Images",
-                  style: TextStyle(color: Colors.green),
+                  style: TextStyle(color: Colors.greenAccent),
                 ),
               ),
-              const Divider(height: 32, thickness: 1),
+              const Divider(height: 32, thickness: 1, color: Colors.white24),
               ListTile(
-                title: const Text("Mid-Points"),
+                title: const Text(
+                  "Mid-Points",
+                  style: TextStyle(color: Colors.white),
+                ),
                 trailing: IconButton(
-                  icon: const Icon(Icons.add, color: Colors.green),
+                  icon: const Icon(Icons.add, color: Colors.greenAccent),
                   onPressed: _addMidPointDialog,
                 ),
               ),
               Column(
                 children: _midPoints.map((mp) {
                   return Card(
+                    color: Colors.grey[900],
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                     margin: const EdgeInsets.symmetric(vertical: 6),
-                    elevation: 2,
+                    elevation: 0,
                     child: ListTile(
-                      title: Text(mp.name),
+                      title: Text(
+                        mp.name,
+                        style: const TextStyle(color: Colors.white),
+                      ),
                       subtitle: Text(
                         "${mp.description}\nLat: ${mp.lat}, Lng: ${mp.lng}",
+                        style: const TextStyle(color: Colors.white70),
                       ),
                       isThreeLine: true,
                       trailing: IconButton(
@@ -376,7 +415,8 @@ class _AddTrekPageState extends State<AddTrekPage> {
               Center(
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
+                    backgroundColor: Colors.greenAccent,
+                    foregroundColor: Colors.black,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 32,
                       vertical: 14,
@@ -391,7 +431,7 @@ class _AddTrekPageState extends State<AddTrekPage> {
                           width: 24,
                           height: 24,
                           child: CircularProgressIndicator(
-                            color: Colors.white,
+                            color: Colors.black,
                             strokeWidth: 2,
                           ),
                         )

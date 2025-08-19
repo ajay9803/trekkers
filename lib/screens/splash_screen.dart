@@ -20,7 +20,6 @@ class _SplashScreenState extends State<SplashScreen>
   void initState() {
     super.initState();
 
-    // Animation for logo scaling
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
@@ -39,7 +38,6 @@ class _SplashScreenState extends State<SplashScreen>
   Future<void> _checkLogin() async {
     final auth = Provider.of<AuthProvider>(context, listen: false);
 
-    // small delay to show splash
     await Future.delayed(const Duration(seconds: 3));
 
     if (auth.isLoggedIn) {
@@ -64,81 +62,29 @@ class _SplashScreenState extends State<SplashScreen>
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      body: Stack(
-        children: [
-          // Gradient background
-          Container(
-            width: double.infinity,
-            height: double.infinity,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.green.shade700, Colors.green.shade300],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+      backgroundColor: Theme.of(context).colorScheme.surface, // dark background
+      body: Center(
+        child: FadeTransition(
+          opacity: _animation,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // App logo image only
+              Image.asset('assets/images/logo.png', height: size.width * 0.35),
+              const SizedBox(height: 20),
+              // Tagline
+              Text(
+                'Explore the mountains',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.secondary, // teal accent
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 1.2,
+                ),
               ),
-            ),
+            ],
           ),
-          // Animated logo and text
-          Center(
-            child: FadeTransition(
-              opacity: _animation,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Circular logo
-                  Container(
-                    width: size.width * 0.3,
-                    height: size.width * 0.3,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black26,
-                          blurRadius: 10,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.terrain,
-                      size: 80,
-                      color: Colors.green,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  // App name
-                  Text(
-                    'TREKKERS',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      letterSpacing: 2,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black26,
-                          offset: Offset(2, 2),
-                          blurRadius: 4,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  // Tagline
-                  Text(
-                    'Explore the mountains!',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.green.shade100,
-                      letterSpacing: 1,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
