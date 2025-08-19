@@ -26,7 +26,19 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         title: 'trekkers',
-        theme: ThemeData(primarySwatch: Colors.green),
+        theme: ThemeData.dark().copyWith(
+          primaryColor: const Color(0xFF2E7D32),
+          colorScheme: const ColorScheme.dark(
+            primary: Color(0xFF2E7D32), // Main trekking green
+            secondary: Color(0xFF80CBC4), // Teal accent (fresh trail vibe)
+            surface: Color(0xFF121212), // App background
+          ),
+          textTheme: ThemeData.dark().textTheme.apply(
+            fontFamily: 'Roboto',
+            bodyColor: Colors.white,
+            displayColor: Colors.white,
+          ),
+        ),
         home: const SplashScreen(),
         debugShowCheckedModeBanner: false,
       ),
