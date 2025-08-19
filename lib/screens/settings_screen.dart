@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:trekkers/screens/login_screen.dart';
 import 'privacy_screen.dart';
 import 'about_screen.dart';
 
@@ -38,10 +39,9 @@ class SettingsTab extends StatelessWidget {
         'icon': Icons.logout,
         'onTap': () async {
           await FirebaseAuth.instance.signOut();
-          Navigator.pushNamedAndRemoveUntil(
-            context,
-            '/signIn',
-            (route) => false,
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const LoginScreen()),
+            (Route<dynamic> route) => false, // remove all previous routes
           );
         },
       },
