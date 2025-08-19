@@ -1,19 +1,50 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:trekkers/screens/booking_details_screen.dart';
 import '../models/booking.dart';
 import '../models/trek.dart';
 import '../providers/treks_provider.dart';
-import '../providers/bookings_provider.dart'; // Assuming you have a provider for bookings
+import '../providers/bookings_provider.dart';
 
-class BookingItem extends StatelessWidget {
+class BookingItem extends StatefulWidget {
   final Booking booking;
 
   const BookingItem({super.key, required this.booking});
 
-  String _formatDate(DateTime date) {
-    return DateFormat.yMMMd().format(date);
+  @override
+  State<BookingItem> createState() => _BookingItemState();
+}
+
+class _BookingItemState extends State<BookingItem> {
+  bool _expanded = false;
+  FetchedTrek? _trek; // cached trek
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTrek();
+  }
+
+  Future<void> _loadTrek() async {
+    final treksProvider = Provider.of<TreksProvider>(context, listen: false);
+    try {
+      final fetchedTrek = await treksProvider.fetchTrekById(
+        widget.booking.trekId,
+      );
+      setState(() {
+        _trek = fetchedTrek;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _trek = null;
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _confirmCancel(BuildContext context) async {
@@ -39,119 +70,149 @@ class BookingItem extends StatelessWidget {
       await Provider.of<BookingsProvider>(
         context,
         listen: false,
-      ).cancelBooking(booking.id);
+      ).cancelBooking(widget.booking.id);
     }
+  }
+
+  Widget _buildGlassShimmerPlaceholder(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Shimmer.fromColors(
+        baseColor: Colors.green.shade100.withOpacity(0.5),
+        highlightColor: Colors.green.shade50.withOpacity(0.3),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+            child: Container(height: 100, color: Colors.white.withOpacity(0.1)),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final treksProvider = Provider.of<TreksProvider>(context, listen: false);
+    if (_isLoading) return _buildGlassShimmerPlaceholder(context);
+    if (_trek == null) return const ListTile(title: Text('Trek not found'));
 
-    return FutureBuilder<Trek?>(
-      future: treksProvider.fetchTrekById(booking.trekId),
-      builder: (ctx, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const ListTile(title: Text('Loading trek...'));
-        } else if (snapshot.hasError || !snapshot.hasData) {
-          return const ListTile(title: Text('Trek not found'));
-        } else {
-          final trek = snapshot.data!;
+    final trek = _trek!;
 
-          return Card(
-            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            elevation: 3,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(8),
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => BookingDetailsPage(booking: booking),
-                  ),
-                );
-              },
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 3,
+      child: Column(
+        children: [
+          // Header (click to expand/collapse)
+          InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: () => setState(() => _expanded = !_expanded),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.green.shade50,
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: Row(
                 children: [
-                  // Trek image preview
-                  ClipRRect(
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(8),
-                      bottomLeft: Radius.circular(8),
-                    ),
-                    child: trek.images.isNotEmpty
-                        ? Image.network(
-                            trek.images[0],
-                            width: 60,
-                            fit: BoxFit.cover,
-                          )
-                        : const Icon(Icons.landscape, size: 60),
-                  ),
                   Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            trek.name,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          trek.name,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Booked on: ${_formatDate(booking.bookedAt)}',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey.shade600,
-                            ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Booked on: ${DateFormat.yMMMd().format(widget.booking.bookedAt)}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.green.shade800,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: booking.paid
-                              ? Colors.green.shade100
-                              : Colors.red.shade100,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          booking.paid ? 'Paid' : 'Unpaid',
-                          style: TextStyle(
-                            color: booking.paid ? Colors.green : Colors.red,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                      if (!booking.paid)
-                        IconButton(
-                          icon: const Icon(Icons.close, color: Colors.red),
-                          tooltip: 'Cancel booking',
-                          onPressed: () => _confirmCancel(context),
-                        ),
-                    ],
+                  Icon(
+                    _expanded
+                        ? Icons.keyboard_arrow_up
+                        : Icons.keyboard_arrow_down,
+                    color: Colors.green.shade700,
                   ),
-                  const SizedBox(width: 8),
                 ],
               ),
             ),
-          );
-        }
-      },
+          ),
+
+          // Expanded details section
+          if (_expanded)
+            Container(
+              padding: const EdgeInsets.all(12),
+              color: Colors.green.shade100,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Payment Status: ${widget.booking.paid ? "Paid" : "Unpaid"}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: widget.booking.paid
+                              ? Colors.green.shade800
+                              : Colors.red.shade800,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Colors.red),
+                        onPressed: () => _confirmCancel(context),
+                        tooltip: 'Cancel Booking',
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Trek Difficulty: ${trek.difficulty}',
+                    style: TextStyle(color: Colors.green.shade900),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Distance: ${trek.distanceKm} km',
+                    style: TextStyle(color: Colors.green.shade900),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Duration: ${trek.durationDays} days',
+                    style: TextStyle(color: Colors.green.shade900),
+                  ),
+                  const SizedBox(height: 8),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              BookingDetailsPage(booking: widget.booking),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.info_outline),
+                    label: const Text('View Details'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green.shade700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

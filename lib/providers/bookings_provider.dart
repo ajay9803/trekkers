@@ -22,8 +22,9 @@ class BookingsProvider with ChangeNotifier {
           .orderBy('bookedAt', descending: true)
           .get();
 
-      _userBookings =
-          snapshot.docs.map((doc) => Booking.fromFirestore(doc)).toList();
+      _userBookings = snapshot.docs
+          .map((doc) => Booking.fromFirestore(doc))
+          .toList();
 
       notifyListeners();
     } catch (e) {
@@ -43,8 +44,8 @@ class BookingsProvider with ChangeNotifier {
       if (!trekSnapshot.exists) {
         return Future.error('Trek not found');
       }
-
-      final slots = trekSnapshot['slotsAvailable'] as int;
+      final slots = trekSnapshot['slotsAvailable'].toInt();
+      print(slots);
       if (slots <= 0) return Future.error('No slots available');
 
       // Check if already booked
@@ -53,7 +54,7 @@ class BookingsProvider with ChangeNotifier {
           .where('trekId', isEqualTo: trekId)
           .where('userId', isEqualTo: user.uid)
           .get();
-
+      print('fada');
       if (existingBooking.docs.isNotEmpty) {
         return Future.error('You have already booked this trek');
       }
@@ -67,8 +68,9 @@ class BookingsProvider with ChangeNotifier {
         paid: false,
       );
 
-      final bookingRef =
-          await _firestore.collection('bookings').add(booking.toMap());
+      final bookingRef = await _firestore
+          .collection('bookings')
+          .add(booking.toMap());
 
       final newBooking = Booking(
         id: bookingRef.id,
@@ -79,7 +81,7 @@ class BookingsProvider with ChangeNotifier {
       );
 
       // Decrement trek slots
-      await trekDoc.update({'slotsAvailable': slots - 1});
+      // await trekDoc.update({'slotsAvailable': slots - 1});
 
       _userBookings.insert(0, newBooking);
       notifyListeners();
@@ -151,13 +153,11 @@ class BookingsProvider with ChangeNotifier {
 
       // Step 3: Fetch user documents
       final userDocs = await Future.wait(
-        userIds.map(
-          (uid) async {
-            final doc = await _firestore.collection('users').doc(uid).get();
-            debugPrint('Fetched user doc: ${doc.id}, exists: ${doc.exists}');
-            return doc;
-          },
-        ),
+        userIds.map((uid) async {
+          final doc = await _firestore.collection('users').doc(uid).get();
+          debugPrint('Fetched user doc: ${doc.id}, exists: ${doc.exists}');
+          return doc;
+        }),
       );
 
       // Step 4: Return user data list

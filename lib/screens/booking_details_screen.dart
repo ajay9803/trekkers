@@ -18,7 +18,7 @@ class BookingDetailsPage extends StatefulWidget {
 }
 
 class _BookingDetailsPageState extends State<BookingDetailsPage> {
-  Trek? _trek;
+  FetchedTrek? _trek;
   bool _loading = true;
   bool _error = false;
   List<Map<String, dynamic>> _bookers = [];
@@ -46,10 +46,7 @@ class _BookingDetailsPageState extends State<BookingDetailsPage> {
         _bookers = bookers;
         _loading = false;
       });
-
-      debugPrint('Bookers fetched: $_bookers');
     } catch (e) {
-      debugPrint('Error loading trek/bookers: $e');
       setState(() {
         _error = true;
         _loading = false;
@@ -92,38 +89,116 @@ class _BookingDetailsPageState extends State<BookingDetailsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (_trek!.images.isNotEmpty)
-              SizedBox(
-                height: 200,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _trek!.images.length,
-                  itemBuilder: (ctx, i) => Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: Image.network(_trek!.images[i]),
+            // Trek Images Placeholder
+            _trek!.images.isNotEmpty
+                ? SizedBox(
+                    height: 200,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _trek!.images.length,
+                      itemBuilder: (ctx, i) => Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(
+                            _trek!.images[i],
+                            width: 300,
+                            height: 200,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                : const SizedBox(
+                    height: 200,
+                    child: Center(
+                      child: Icon(
+                        Icons.landscape,
+                        size: 100,
+                        color: Colors.grey,
+                      ),
+                    ),
                   ),
-                ),
-              )
-            else
-              const SizedBox(
-                height: 200,
-                child: Center(child: Icon(Icons.landscape, size: 100)),
+            const SizedBox(height: 16),
+
+            // Description
+            Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
-            const SizedBox(height: 16),
-            Text(
-              'Description:',
-              style: Theme.of(context).textTheme.titleMedium,
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Description',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(_trek!.description),
+                  ],
+                ),
+              ),
             ),
-            Text(_trek!.description),
-            const SizedBox(height: 16),
-            Text('Difficulty: ${_trek!.difficulty}'),
-            Text('Distance: ${_trek!.distanceKm} km'),
-            Text('Duration: ${_trek!.durationDays} days'),
-            Text('Start Location: ${_trek!.startLocation}'),
-            Text('Available Slots: ${_trek!.slotsAvailable}'),
-            Text('Price: \$${_trek!.price.toStringAsFixed(2)}'),
-            const SizedBox(height: 16),
-            if (widget.booking.paid == false)
+
+            // Trek Info
+            Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Trek Details',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    _buildInfoRow(
+                      Icons.terrain,
+                      'Difficulty',
+                      _trek!.difficulty,
+                    ),
+                    _buildInfoRow(
+                      Icons.place,
+                      'Start Location',
+                      _trek!.startLocation,
+                    ),
+                    _buildInfoRow(
+                      Icons.directions_walk,
+                      'Distance',
+                      '${_trek!.distanceKm} km',
+                    ),
+                    _buildInfoRow(
+                      Icons.timer,
+                      'Duration',
+                      '${_trek!.durationDays} days',
+                    ),
+                    _buildInfoRow(
+                      Icons.person,
+                      'Available Slots',
+                      '${_trek!.slotsAvailable}',
+                    ),
+                    _buildInfoRow(
+                      Icons.monetization_on,
+                      'Price',
+                      '\$${_trek!.price.toStringAsFixed(2)}',
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Payment Button
+            if (!widget.booking.paid)
               Center(
                 child: ElevatedButton(
                   onPressed: () {
@@ -134,10 +209,20 @@ class _BookingDetailsPageState extends State<BookingDetailsPage> {
               )
             else
               const Center(
-                child: Text('Paid ✅', style: TextStyle(color: Colors.green)),
+                child: Text(
+                  'Paid ✅',
+                  style: TextStyle(
+                    color: Colors.green,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
+
             const SizedBox(height: 24),
+
+            // Bookers
             Text('Booked By:', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
             _bookers.isEmpty
                 ? const Text('No users booked this trek yet.')
                 : ListView.builder(
@@ -153,7 +238,6 @@ class _BookingDetailsPageState extends State<BookingDetailsPage> {
                         profileImageUrl: user['profileImageUrl'] ?? '',
                         isCurrentUser: user['id'] == currentUserId,
                         onChatPressed: () {
-                          // TODO: Navigate to chat with this user
                           debugPrint('Chat pressed for user: ${user['id']}');
                         },
                       );
@@ -161,6 +245,20 @@ class _BookingDetailsPageState extends State<BookingDetailsPage> {
                   ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: Colors.green),
+          const SizedBox(width: 8),
+          Text('$label: ', style: const TextStyle(fontWeight: FontWeight.bold)),
+          Expanded(child: Text(value)),
+        ],
       ),
     );
   }

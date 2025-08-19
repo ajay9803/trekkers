@@ -41,48 +41,51 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyBC_e5qmJm4MtrTnz1cUZaStVdCoKqBagQ',
-    appId: '1:439341998850:web:8993fcd41bfef11a2f981b',
-    messagingSenderId: '439341998850',
-    projectId: 'trekky-8f8ca',
-    authDomain: 'trekky-8f8ca.firebaseapp.com',
-    storageBucket: 'trekky-8f8ca.firebasestorage.app',
-    measurementId: 'G-ECVWY1DSRP',
+    apiKey: 'AIzaSyAJUQJ45xWCEfpbyAVOMv_tTkH45NBoNYs',
+    appId: '1:325137654893:web:63f2be3348c1cf309c8b64',
+    messagingSenderId: '325137654893',
+    projectId: 'pottery-house-33a71',
+    authDomain: 'pottery-house-33a71.firebaseapp.com',
+    storageBucket: 'pottery-house-33a71.appspot.com',
+    measurementId: 'G-6233XV8ZER',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyAfaLt2FT-N4qRXLIah76JeljrBT8sPwgg',
-    appId: '1:439341998850:android:6c85196f506a25352f981b',
-    messagingSenderId: '439341998850',
-    projectId: 'trekky-8f8ca',
-    storageBucket: 'trekky-8f8ca.firebasestorage.app',
+    apiKey: 'AIzaSyCwsW8mxlzdRYScXa8eUMgyUvQrfydaAAY',
+    appId: '1:325137654893:android:0d221c80687531699c8b64',
+    messagingSenderId: '325137654893',
+    projectId: 'pottery-house-33a71',
+    storageBucket: 'pottery-house-33a71.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCt_vGquAWybV2X_Pl1KMJhGb6WYj0jqBA',
-    appId: '1:439341998850:ios:879fea343eb9f5162f981b',
-    messagingSenderId: '439341998850',
-    projectId: 'trekky-8f8ca',
-    storageBucket: 'trekky-8f8ca.firebasestorage.app',
+    apiKey: 'AIzaSyDTyvnnHcPur8jt8DF8jQpyqiiovj6Ky9M',
+    appId: '1:325137654893:ios:98890c9790dbd2249c8b64',
+    messagingSenderId: '325137654893',
+    projectId: 'pottery-house-33a71',
+    storageBucket: 'pottery-house-33a71.appspot.com',
+    iosClientId: '325137654893-cr7fc9t7i4hkiol7rq18mafoa4osdrns.apps.googleusercontent.com',
     iosBundleId: 'com.example.trekkers',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyCt_vGquAWybV2X_Pl1KMJhGb6WYj0jqBA',
-    appId: '1:439341998850:ios:879fea343eb9f5162f981b',
-    messagingSenderId: '439341998850',
-    projectId: 'trekky-8f8ca',
-    storageBucket: 'trekky-8f8ca.firebasestorage.app',
+    apiKey: 'AIzaSyDTyvnnHcPur8jt8DF8jQpyqiiovj6Ky9M',
+    appId: '1:325137654893:ios:98890c9790dbd2249c8b64',
+    messagingSenderId: '325137654893',
+    projectId: 'pottery-house-33a71',
+    storageBucket: 'pottery-house-33a71.appspot.com',
+    iosClientId: '325137654893-cr7fc9t7i4hkiol7rq18mafoa4osdrns.apps.googleusercontent.com',
     iosBundleId: 'com.example.trekkers',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyBC_e5qmJm4MtrTnz1cUZaStVdCoKqBagQ',
-    appId: '1:439341998850:web:66bf5b10e2810fc72f981b',
-    messagingSenderId: '439341998850',
-    projectId: 'trekky-8f8ca',
-    authDomain: 'trekky-8f8ca.firebaseapp.com',
-    storageBucket: 'trekky-8f8ca.firebasestorage.app',
-    measurementId: 'G-R4VZRK2J06',
+    apiKey: 'AIzaSyCYyJ52i9YQBMIwL24aa64MuDH5IHak6B4',
+    appId: '1:325137654893:web:6f1c4c43c955c9ad9c8b64',
+    messagingSenderId: '325137654893',
+    projectId: 'pottery-house-33a71',
+    authDomain: 'pottery-house-33a71.firebaseapp.com',
+    storageBucket: 'pottery-house-33a71.appspot.com',
+    measurementId: 'G-NHBQ9WVTNZ',
   );
+
 }

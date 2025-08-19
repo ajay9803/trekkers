@@ -1,45 +1,36 @@
 {
   "project_info": {
-    "project_number": "439341998850",
-    "project_id": "trekky-8f8ca",
-    "storage_bucket": "trekky-8f8ca.firebasestorage.app"
+    "project_number": "325137654893",
+    "project_id": "pottery-house-33a71",
+    "storage_bucket": "pottery-house-33a71.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:439341998850:android:6c85196f506a25352f981b",
+        "mobilesdk_app_id": "1:325137654893:android:0d221c80687531699c8b64",
         "android_client_info": {
           "package_name": "com.example.trekkers"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "325137654893-0vkahabgemejonu2hjhb61b78f0u545e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyAfaLt2FT-N4qRXLIah76JeljrBT8sPwgg"
+          "current_key": "AIzaSyCwsW8mxlzdRYScXa8eUMgyUvQrfydaAAY"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:439341998850:android:9b1b614a9540424f2f981b",
-        "android_client_info": {
-          "package_name": "com.example.trekky"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyAfaLt2FT-N4qRXLIah76JeljrBT8sPwgg"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "325137654893-0vkahabgemejonu2hjhb61b78f0u545e.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
