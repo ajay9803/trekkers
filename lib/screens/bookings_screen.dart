@@ -13,15 +13,15 @@ class MyBookingsScreen extends StatefulWidget {
 }
 
 class _MyBookingsScreenState extends State<MyBookingsScreen> {
-  late Future<void> _bookingsFuture;
+  bool _isInit = true;
 
   @override
-  void initState() {
-    super.initState();
-    _bookingsFuture = Provider.of<BookingsProvider>(
-      context,
-      listen: false,
-    ).fetchUserBookings();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_isInit) {
+      Provider.of<BookingsProvider>(context, listen: false).fetchUserBookings();
+      _isInit = false;
+    }
   }
 
   Widget _buildGlassShimmerPlaceholder() {
@@ -44,31 +44,26 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bookingsProvider = Provider.of<BookingsProvider>(context);
-
     return Scaffold(
       appBar: AppBar(title: const Text('My Bookings')),
-      body: FutureBuilder(
-        future: _bookingsFuture,
-        builder: (ctx, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            // Show multiple shimmer placeholders
+      body: Consumer<BookingsProvider>(
+        builder: (ctx, bookingsProvider, _) {
+          if (bookingsProvider.isLoading) {
             return ListView.builder(
               itemCount: 4,
               itemBuilder: (ctx, i) => _buildGlassShimmerPlaceholder(),
             );
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else {
-            final bookings = bookingsProvider.userBookings;
-            if (bookings.isEmpty) {
-              return const Center(child: Text('No bookings yet.'));
-            }
-            return ListView.builder(
-              itemCount: bookings.length,
-              itemBuilder: (ctx, i) => BookingItem(booking: bookings[i]),
-            );
           }
+
+          final bookings = bookingsProvider.userBookings;
+          if (bookings.isEmpty) {
+            return const Center(child: Text('No bookings yet.'));
+          }
+
+          return ListView.builder(
+            itemCount: bookings.length,
+            itemBuilder: (ctx, i) => BookingItem(booking: bookings[i]),
+          );
         },
       ),
     );

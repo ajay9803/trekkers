@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:trekkers/screens/booking_details_screen.dart';
 import '../models/booking.dart';
 import '../models/trek.dart';
-import '../providers/treks_provider.dart';
 import '../providers/bookings_provider.dart';
+import '../providers/treks_provider.dart';
+import '../screens/booking_details_screen.dart';
 
 class BookingItem extends StatefulWidget {
   final Booking booking;
@@ -20,7 +20,7 @@ class BookingItem extends StatefulWidget {
 
 class _BookingItemState extends State<BookingItem> {
   bool _expanded = false;
-  FetchedTrek? _trek; // cached trek
+  FetchedTrek? _trek;
   bool _isLoading = true;
 
   @override
@@ -67,14 +67,23 @@ class _BookingItemState extends State<BookingItem> {
     );
 
     if (shouldCancel == true) {
-      await Provider.of<BookingsProvider>(
-        context,
-        listen: false,
-      ).cancelBooking(widget.booking.id);
+      try {
+        await Provider.of<BookingsProvider>(
+          context,
+          listen: false,
+        ).cancelBooking(widget.booking.id);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Booking canceled')));
+      } catch (e) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
     }
   }
 
-  Widget _buildGlassShimmerPlaceholder(BuildContext context) {
+  Widget _buildGlassShimmerPlaceholder() {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -94,7 +103,7 @@ class _BookingItemState extends State<BookingItem> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) return _buildGlassShimmerPlaceholder(context);
+    if (_isLoading) return _buildGlassShimmerPlaceholder();
     if (_trek == null) return const ListTile(title: Text('Trek not found'));
 
     final trek = _trek!;
@@ -105,7 +114,7 @@ class _BookingItemState extends State<BookingItem> {
       elevation: 3,
       child: Column(
         children: [
-          // Header (click to expand/collapse)
+          // Header
           InkWell(
             borderRadius: BorderRadius.circular(12),
             onTap: () => setState(() => _expanded = !_expanded),
@@ -131,10 +140,7 @@ class _BookingItemState extends State<BookingItem> {
                         const SizedBox(height: 4),
                         Text(
                           'Booked on: ${DateFormat.yMMMd().format(widget.booking.bookedAt)}',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.green.shade800,
-                          ),
+                          style: TextStyle(color: Colors.green.shade800),
                         ),
                       ],
                     ),
@@ -150,7 +156,7 @@ class _BookingItemState extends State<BookingItem> {
             ),
           ),
 
-          // Expanded details section
+          // Expanded section
           if (_expanded)
             Container(
               padding: const EdgeInsets.all(12),

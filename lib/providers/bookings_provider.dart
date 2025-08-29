@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:trekkers/apis/email_service.dart';
 import '../models/booking.dart';
 
 class BookingsProvider with ChangeNotifier {
@@ -10,10 +11,16 @@ class BookingsProvider with ChangeNotifier {
   List<Booking> _userBookings = [];
   List<Booking> get userBookings => [..._userBookings];
 
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
+
   /// Fetch bookings for the current user
   Future<void> fetchUserBookings() async {
     final user = _auth.currentUser;
     if (user == null) return;
+
+    _isLoading = true;
+    notifyListeners();
 
     try {
       final snapshot = await _firestore
@@ -25,10 +32,11 @@ class BookingsProvider with ChangeNotifier {
       _userBookings = snapshot.docs
           .map((doc) => Booking.fromFirestore(doc))
           .toList();
-
-      notifyListeners();
     } catch (e) {
       return Future.error('Failed to fetch bookings: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
@@ -41,25 +49,21 @@ class BookingsProvider with ChangeNotifier {
 
     try {
       final trekSnapshot = await trekDoc.get();
-      if (!trekSnapshot.exists) {
-        return Future.error('Trek not found');
-      }
+      if (!trekSnapshot.exists) return Future.error('Trek not found');
+
       final slots = trekSnapshot['slotsAvailable'].toInt();
-      print(slots);
       if (slots <= 0) return Future.error('No slots available');
 
-      // Check if already booked
       final existingBooking = await _firestore
           .collection('bookings')
           .where('trekId', isEqualTo: trekId)
           .where('userId', isEqualTo: user.uid)
           .get();
-      print('fada');
+
       if (existingBooking.docs.isNotEmpty) {
         return Future.error('You have already booked this trek');
       }
 
-      // Create booking with paid = false
       final booking = Booking(
         id: '',
         trekId: trekId,
@@ -80,38 +84,47 @@ class BookingsProvider with ChangeNotifier {
         paid: booking.paid,
       );
 
-      // Decrement trek slots
-      // await trekDoc.update({'slotsAvailable': slots - 1});
-
       _userBookings.insert(0, newBooking);
       notifyListeners();
+
+      // Send email confirmation
+      final userDoc = await _firestore.collection('users').doc(user.uid).get();
+      final userData = userDoc.data() as Map<String, dynamic>;
+      final trekName = trekSnapshot['name'] ?? 'Trek';
+
+      await EmailService.sendBookingEmail(
+        userEmail: userData['email'],
+        userName: userData['username'] ?? 'Guest',
+        trekName: trekName,
+      );
     } catch (e) {
       return Future.error('Booking failed: $e');
     }
   }
 
-  /// Delete a booking (cancel)
+  /// Cancel a booking
   Future<void> cancelBooking(String bookingId) async {
     try {
-      // Find booking in memory
       final bookingIndex = _userBookings.indexWhere((b) => b.id == bookingId);
       if (bookingIndex == -1) return Future.error('Booking not found');
 
       final booking = _userBookings[bookingIndex];
 
-      // Delete booking from Firestore
+      // Delete booking
       await _firestore.collection('bookings').doc(bookingId).delete();
 
+      print('dada');
       // Increment trek slots back
       final trekDoc = _firestore.collection('treks').doc(booking.trekId);
       await _firestore.runTransaction((transaction) async {
         final trekSnapshot = await transaction.get(trekDoc);
         if (!trekSnapshot.exists) return;
-        final currentSlots = trekSnapshot['slotsAvailable'] as int;
-        transaction.update(trekDoc, {'slotsAvailable': currentSlots + 1});
+        final currentSlots = trekSnapshot['slotsAvailable'];
+        transaction.update(trekDoc, {
+          'slotsAvailable': double.parse(currentSlots.toString()) + 1,
+        });
       });
 
-      // Remove from local list
       _userBookings.removeAt(bookingIndex);
       notifyListeners();
     } catch (e) {
@@ -119,11 +132,11 @@ class BookingsProvider with ChangeNotifier {
     }
   }
 
+  /// Fetch all users who booked a specific trek
   Future<List<Map<String, dynamic>>> fetchTrekBookers(String trekId) async {
     try {
       debugPrint('Fetching bookings for trekId: $trekId');
 
-      // Step 1: Get all bookings for the trek
       final bookingsSnapshot = await _firestore
           .collection('bookings')
           .where('trekId', isEqualTo: trekId)
@@ -136,7 +149,6 @@ class BookingsProvider with ChangeNotifier {
         return [];
       }
 
-      // Step 2: Extract unique userIds
       final userIds = bookingsSnapshot.docs
           .map((doc) => doc['userId'] as String?)
           .where((uid) => uid != null)
@@ -151,7 +163,6 @@ class BookingsProvider with ChangeNotifier {
         return [];
       }
 
-      // Step 3: Fetch user documents
       final userDocs = await Future.wait(
         userIds.map((uid) async {
           final doc = await _firestore.collection('users').doc(uid).get();
@@ -160,10 +171,9 @@ class BookingsProvider with ChangeNotifier {
         }),
       );
 
-      // Step 4: Return user data list
       final users = userDocs.where((doc) => doc.exists).map((doc) {
         final data = doc.data() as Map<String, dynamic>;
-        data['id'] = doc.id; // add the document ID
+        data['id'] = doc.id;
         debugPrint('User data: $data');
         return data;
       }).toList();
