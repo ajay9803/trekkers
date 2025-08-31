@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 
@@ -13,16 +12,38 @@ class AuthProvider with ChangeNotifier {
   final FirebaseStorage _storage = FirebaseStorage.instance;
 
   User? user;
+  Map<String, dynamic>? userData; // 🔑 Store Firestore user document here
 
   AuthProvider() {
     user = _auth.currentUser;
-    _auth.authStateChanges().listen((u) {
+    _auth.authStateChanges().listen((u) async {
       user = u;
+      if (user != null) {
+        await loadUserData(user!.uid); // fetch Firestore data on auth change
+      } else {
+        userData = null;
+      }
       notifyListeners();
     });
   }
 
   bool get isLoggedIn => user != null;
+  String get role => userData?['role'] ?? 'user'; // quick role getter
+
+  // --------------------------
+  // Load user data from Firestore
+  // --------------------------
+  Future<void> loadUserData(String uid) async {
+    try {
+      final doc = await _firestore.collection('users').doc(uid).get();
+      if (doc.exists) {
+        userData = doc.data();
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint("Error loading user data: $e");
+    }
+  }
 
   // --------------------------
   // Signup with email/password + optional profile image
@@ -36,7 +57,6 @@ class AuthProvider with ChangeNotifier {
     File? profileImage,
   }) async {
     try {
-      // 1️⃣ Create Firebase Auth user
       UserCredential cred = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
@@ -44,7 +64,6 @@ class AuthProvider with ChangeNotifier {
 
       String? profileImageUrl;
 
-      // 2️⃣ Upload image if provided
       if (profileImage != null) {
         final ref = _storage
             .ref()
@@ -54,8 +73,7 @@ class AuthProvider with ChangeNotifier {
         profileImageUrl = await ref.getDownloadURL();
       }
 
-      // 3️⃣ Save user details in Firestore
-      await _firestore.collection('users').doc(cred.user!.uid).set({
+      final data = {
         'username': username,
         'email': email,
         'address': address,
@@ -63,7 +81,11 @@ class AuthProvider with ChangeNotifier {
         'role': 'user',
         'profileImageUrl': profileImageUrl ?? '',
         'createdAt': DateTime.now().toIso8601String(),
-      });
+      };
+
+      await _firestore.collection('users').doc(cred.user!.uid).set(data);
+      userData = data;
+      notifyListeners();
     } catch (e) {
       return Future.error(e.toString());
     }
@@ -74,7 +96,11 @@ class AuthProvider with ChangeNotifier {
   // --------------------------
   Future<void> signInWithEmail(String email, String password) async {
     try {
-      await _auth.signInWithEmailAndPassword(email: email, password: password);
+      UserCredential cred = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      await loadUserData(cred.user!.uid);
     } catch (e) {
       return Future.error(e.toString());
     }
@@ -87,7 +113,8 @@ class AuthProvider with ChangeNotifier {
     try {
       if (kIsWeb) {
         GoogleAuthProvider googleProvider = GoogleAuthProvider();
-        await _auth.signInWithPopup(googleProvider);
+        final cred = await _auth.signInWithPopup(googleProvider);
+        await loadUserData(cred.user!.uid);
       } else {
         final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
         if (googleUser == null) return;
@@ -99,7 +126,8 @@ class AuthProvider with ChangeNotifier {
           accessToken: googleAuth.accessToken,
           idToken: googleAuth.idToken,
         );
-        await _auth.signInWithCredential(credential);
+        final cred = await _auth.signInWithCredential(credential);
+        await loadUserData(cred.user!.uid);
       }
     } catch (e) {
       return Future.error(e.toString());
@@ -115,7 +143,8 @@ class AuthProvider with ChangeNotifier {
       if (result.status == LoginStatus.success) {
         final OAuthCredential facebookCredential =
             FacebookAuthProvider.credential(result.accessToken!.token);
-        await _auth.signInWithCredential(facebookCredential);
+        final cred = await _auth.signInWithCredential(facebookCredential);
+        await loadUserData(cred.user!.uid);
       } else {
         return Future.error('Facebook login failed');
       }
@@ -129,6 +158,8 @@ class AuthProvider with ChangeNotifier {
   // --------------------------
   Future<void> signOut() async {
     await _auth.signOut();
+    userData = null;
+    notifyListeners();
   }
 
   Future<Map<String, dynamic>?> fetchUserById(String uid) async {
@@ -137,7 +168,7 @@ class AuthProvider with ChangeNotifier {
       if (doc.exists) {
         return doc.data();
       } else {
-        return null; // User not found
+        return null;
       }
     } catch (e) {
       return Future.error(e.toString());
